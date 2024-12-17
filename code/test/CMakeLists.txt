@@ -4,9 +4,7 @@ set(CMAKE_OSX_ARCHITECTURES x86_64)
 
 project(lab2_test)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
 Include(FetchContent)
 
