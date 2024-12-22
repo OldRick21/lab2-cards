@@ -2,7 +2,7 @@
 #include "../src/card-deck/CardDeck.h"
 
 int main() {
-    CardDeck deck; // Создаём колоду по умолчанию (52 карты)
+    CardDeck deck;
     int choice;
 
     do {
@@ -67,7 +67,7 @@ int main() {
             }
             case 6: deck.shuffle(); break;
             case 7: {
-                CardDeck deck2(20); // Создаем вторую колоду для примера
+                CardDeck deck2(20); 
                 deck = deck + deck2;
                 break;
             }
@@ -81,6 +81,12 @@ int main() {
                 break;
             }
             case 10: std::cout << "Количество карт в колоде: " << deck.getCount() << std::endl; break;
+            case 11: {
+                for (int i = 0; i < deck.getCount(); i++){
+                    std::cout << i + 1 << ": " << deck.getCards()[i]->outputCard() << std::endl; 
+                }
+                break;
+                }
             case 0: {
                 std::cout << "Выход...\n";
                 break;

@@ -21,11 +21,6 @@ Card::Card(const Card &card) {
     this->suit = card.getSuit();
 }
 
-// Card::Card(Card &&card)
-// {
-//     this->rank = card.getRank();
-//     this->suit = card.getSuit();
-// }
 
 bool Card::operator<(const Card& card) const {
     if (this->suit != card.suit) {

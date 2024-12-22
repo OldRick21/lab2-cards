@@ -3,17 +3,11 @@
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("Card Construction") {
-    // Test default constructor
-    // Card card1;
-    // REQUIRE(card1.getRank() >= 1 && card1.getRank() < 14);
-    // REQUIRE(card1.getSuit() >= 0 && card1.getSuit() < 4);
 
-    // Test constructor with parameters
     Card card2(10, HEARTS);
     REQUIRE(card2.getRank() == 10);
     REQUIRE(card2.getSuit() == HEARTS);
 
-    // Test copy constructor
     Card card3(card2);
     REQUIRE(card3.getRank() == 10);
     REQUIRE(card3.getSuit() == HEARTS);
@@ -41,37 +35,37 @@ TEST_CASE("Card Output") {
     REQUIRE(ss.str() == "J♥");
 
     Card card2(13, SPIDES);
-    ss.str(""); //clear stream
+    ss.str(""); 
     ss << card2;
     REQUIRE(ss.str() == "A♠");
 
     Card card3(12, CLUBS);
-    ss.str(""); //clear stream
+    ss.str(""); 
     ss << card3;
     REQUIRE(ss.str() == "K♣");
 
     Card card4(11, DIAMOND);
-    ss.str(""); //clear stream
+    ss.str(""); 
     ss << card4;
     REQUIRE(ss.str() == "Q♦");
 }
 
 TEST_CASE("Card Input") {
     Card card;
-    std::stringstream ss("10 2"); // 10 of Hearts
+    std::stringstream ss("10 2"); 
     ss >> card;
     REQUIRE(card.getRank() == 10);
     REQUIRE(card.getSuit() == HEARTS);
 
-    std::stringstream ss2("1 1"); // Ace of Diamonds
+    std::stringstream ss2("1 1"); 
     ss2 >> card;
     REQUIRE(card.getRank() == 1);
     REQUIRE(card.getSuit() == DIAMOND);
 
-    std::stringstream ss3("14 1"); //invalid rank
+    std::stringstream ss3("14 1"); 
     REQUIRE_THROWS_AS(ss3 >> card, std::invalid_argument);
 
-    std::stringstream ss4("1 5"); //invalid suit
+    std::stringstream ss4("1 5"); 
     REQUIRE_THROWS_AS(ss4 >> card, std::invalid_argument);
 }
 

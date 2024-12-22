@@ -17,7 +17,7 @@ public:
 
     Card **getCards() const;
 
-    void setCards(Card **cards);
+    void setCards(Card **cards, bool destroyExisting);
 
     int getCount() const;
 
@@ -33,7 +33,7 @@ public:
 
     void shuffle();
 
-    CardDeck &operator+(const CardDeck &cardDeck) const;
+    CardDeck operator+(const CardDeck &cardDeck) const;
 
     CardDeck& operator=(CardDeck &&cardDeck);
 

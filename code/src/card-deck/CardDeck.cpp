@@ -1,3 +1,4 @@
+
 #include "CardDeck.h"
 #include <algorithm>
 #include <random>
@@ -6,35 +7,38 @@
 CardDeck::CardDeck(int count) {
     if (count < 1) {
         this->count = 0;
-        cards = NULL;
+        cards = nullptr;
         return;
     }
-    this->count = count;
-    cards = new Card *[count];
-    int flag = count;
+    if (count > 52) {
+        this->count = 52;
+    } else {
+        this->count = count;
+    }
+    cards = new Card *[this->count];
+    int flag = this->count;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 13; j++) {
-            if (flag > 0){
-            Card *newCard = new Card(j, static_cast<Suit>(i));
-            this->cards[flag - 1] = newCard;
-            // delete newCard;
-            flag--;
+            if (flag > 0) {
+                Card *newCard = new Card(j, static_cast<Suit>(i));
+                this->cards[flag - 1] = newCard;
+                flag--;
             }
-
         }
     }
     this->shuffle();
 }
 
+
 CardDeck::CardDeck(const CardDeck &cardDeck) {
     count = cardDeck.getCount();
     cards = new Card *[count];
     for (int i = 0; i < count; ++i) {
-        cards[i] = new Card(*cardDeck.cards[i]); // Копируем сами объекты карты
+        cards[i] = new Card(*cardDeck.cards[i]); 
     }
 }
 
-CardDeck::CardDeck(CardDeck &&cardDeck){
+CardDeck::CardDeck(CardDeck &&cardDeck) {
     std::swap(count, cardDeck.count);
     std::swap(cards, cardDeck.cards);
     cardDeck.count = 0;
@@ -46,15 +50,13 @@ CardDeck::CardDeck() {
     cards = new Card *[MAX_UNIQUE_CARDS_SIZE];
     int flag = MAX_UNIQUE_CARDS_SIZE;
     for (int i = 0; i < 4; i++) {
-        if (flag > 0){
+        if (flag > 0) {
             for (int j = 0; j < 13; j++) {
-                if (flag > 0){   
-                Card *newCard = new Card(j, static_cast<Suit>(i));
-                this->cards[flag - 1] = newCard;
-                // delete newCard;
-                flag--;
+                if (flag > 0) {
+                    Card *newCard = new Card(j, static_cast<Suit>(i));
+                    this->cards[flag - 1] = newCard;
+                    flag--;
                 }
-
             }
         }
     }
@@ -62,27 +64,22 @@ CardDeck::CardDeck() {
 }
 
 CardDeck::~CardDeck() {
-    for (int i = 0; i < count; ++i) {
-        delete cards[i];
-    }
-    delete[] cards;
+    cardsDestroy();
 }
 
 bool CardDeck::contains(Card *card) const {
-
     for (int i = 0; i < count; i++) {
-        
-        if (card->getSuit() == cards[i]->getSuit()){        
+        if (card->getSuit() == cards[i]->getSuit()) {
             if (*card == *this->cards[i]) {
                 return true;
             }
         }
     }
-
     return false;
 }
 
 void CardDeck::operator>>(CardDeck &cardDeck) {
+    if (count == 0) return;
 
     Card *card = this->cards[this->count - 1];
 
@@ -97,8 +94,7 @@ void CardDeck::operator>>(CardDeck &cardDeck) {
 
     newCards2[cardDeck.getCount()] = card;
 
-    delete[] cardDeck.getCards();
-    cardDeck.setCards(newCards2);
+    cardDeck.setCards(newCards2, false); 
 
     count--;
     cardDeck.setCount(cardDeck.getCount() + 1);
@@ -108,8 +104,10 @@ Card **CardDeck::getCards() const {
     return cards;
 }
 
-void CardDeck::setCards(Card **cards) {
-    delete[] this->cards;
+void CardDeck::setCards(Card **cards, bool destroyExisting) {
+    if (destroyExisting) {
+        cardsDestroy();
+    }
     this->cards = cards;
 }
 
@@ -117,14 +115,25 @@ int CardDeck::getCount() const {
     return count;
 }
 
-void CardDeck::setCount(int count) {
-    this->count = count;
+void CardDeck::setCount(int newCount) {
+    if (newCount > 0) {
+        if (newCount < count) {
+            
+            for (int i = newCount; i < count; ++i) {
+                delete cards[i];
+            }
+        }
+        this->count = newCount;
+    } else {
+        this->count = 0;
+        cardsDestroy(); 
+    }
 }
 
 void CardDeck::addRandomCard() {
     Card **newCards = new Card *[count + 1];
     std::copy(cards, cards + count, newCards);
-    newCards[count] = new Card(); // Создаем новую карту
+    newCards[count] = new Card(); 
     count++;
     delete[] cards;
     cards = newCards;
@@ -160,7 +169,7 @@ void CardDeck::sortCards(bool reversed) {
     for (int i = 0; i < count - 1; i++) {
         for (int j = count - 1; j > i; j--) {
             if ((cards[i]->getSizeForSort() > cards[j]->getSizeForSort() && !reversed) ||
-                (cards[i]->getSizeForSort() > cards[j]->getSizeForSort() && reversed)) {
+                (cards[i]->getSizeForSort() < cards[j]->getSizeForSort() && reversed)) {
                 Card *t = cards[i];
                 cards[i] = cards[j];
                 cards[j] = t;
@@ -176,21 +185,23 @@ void CardDeck::shuffle() {
     std::shuffle(cards, cards + count, g);
 }
 
-CardDeck &CardDeck::operator+(const CardDeck &cardDeck) const {
-    CardDeck *newCardDeck = new CardDeck(0);
-    newCardDeck->setCards(new Card *[count + cardDeck.getCount()]);
-    newCardDeck->setCount(count + cardDeck.getCount());
+CardDeck CardDeck::operator+(const CardDeck &cardDeck) const {
+    CardDeck newDeck(0);
+
+    newDeck.count = count + cardDeck.getCount();
+
+    newDeck.cards = new Card* [newDeck.count];
+
     for (int i = 0; i < count; ++i) {
-        newCardDeck->cards[i] = new Card(*cards[i]); // Копируем сами объекты карты
+        newDeck.cards[i] = new Card(*cards[i]); 
     }
     for (int i = 0; i < cardDeck.getCount(); ++i) {
-        newCardDeck->cards[count + i] = new Card(*cardDeck.cards[i]); // Копируем сами объекты карты
+        newDeck.cards[count + i] = new Card(*cardDeck.cards[i]); 
     }
-    newCardDeck->shuffle();
-    return *newCardDeck;
+    return newDeck;
 }
 
-CardDeck& CardDeck::operator=(CardDeck &&cardDeck){
+CardDeck& CardDeck::operator=(CardDeck &&cardDeck) {
     if (this == &cardDeck) {
         return *this;
     }
@@ -210,7 +221,7 @@ CardDeck& CardDeck::operator=(const CardDeck &cardDeck) {
     count = cardDeck.getCount();
     cards = new Card *[count];
     for (int i = 0; i < count; ++i) {
-        cards[i] = new Card(*cardDeck.cards[i]); // Копируем сами объекты карты
+        cards[i] = new Card(*cardDeck.cards[i]); 
     }
     return *this;
 }
@@ -223,11 +234,14 @@ CardDeck CardDeck::suitFinder(int suit) const {
         }
     });
 
-    CardDeck newDeck(c_count);
+    CardDeck newDeck(0);
+    newDeck.count = c_count;
+    newDeck.cards = new Card* [c_count];
+
     int flag = 0;
     std::for_each(cards, cards + count, [&flag, &suit, &newDeck](Card *&card) {
         if (card->getSuit() == suit) {
-            newDeck.cards[flag] = new Card(*card); // Копируем сами объекты карты
+            newDeck.cards[flag] = new Card(*card); 
             flag++;
         }
     });
@@ -236,25 +250,25 @@ CardDeck CardDeck::suitFinder(int suit) const {
 }
 
 bool CardDeck::is_twink() {
-
-    bool flag = false;
-
-    std::for_each(&cards[0], &cards[count], [this, &flag](Card *&card) {
-        if (contains(card)) {
-            flag = true;
+    for (int i = 0; i < count; ++i) {
+        for (int j = i + 1; j < count; ++j) {
+            if (cards[i]->getSuit() == cards[j]->getSuit() && *cards[i] == *cards[j]) {
+                return true;
             }
-        });
-
-    return flag;
+        }
+    }
+    return false;
 }
 
 void CardDeck::cardsDestroy() {
-    for (int i = 0; i < count; ++i) {
-        delete cards[i];
+    if (cards != nullptr) {
+        for (int i = 0; i < count; ++i) {
+            delete cards[i];
+        }
+        delete[] cards;
+        cards = nullptr;
+        count = 0;
     }
-    delete[] cards;
-    cards = nullptr;
-    count = 0;
 }
 
 std::ostream &operator<<(std::ostream &os, const CardDeck &carddeck) {
@@ -267,5 +281,4 @@ std::istream &operator>>(std::istream &is, CardDeck &carddeck) {
     is >> tmp;
     carddeck.setCount(tmp);
     return is;
-
 }
