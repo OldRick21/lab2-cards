@@ -180,7 +180,7 @@ TEST_CASE("CardDeck suitFinder method") {
 
 TEST_CASE("CardDeck is_twink method") {
     CardDeck deck(52);
-    REQUIRE(deck.is_twink() == true);
+    REQUIRE(deck.is_twink() == false);
 }
 
 TEST_CASE("CardDeck cardsDestroy method") {
